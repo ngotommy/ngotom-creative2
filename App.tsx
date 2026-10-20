@@ -3,11 +3,12 @@ import {
   StyleSheet,
   Text,
   View,
+  Image,
   Pressable,
   GestureResponderEvent,
 } from 'react-native';
 import { useState } from 'react';
-import { Flower, EMOJIS } from './types';
+import { Flower, EMOJIS, MESSAGES, GRASS_SPOTS } from './types';
 import FlowerItem from './components/FlowerItem';
 
 export default function App() {
@@ -16,11 +17,15 @@ export default function App() {
     { emoji: '🌻', x: 200, y: 150 },
   ]);
   const [selectedEmoji, setSelectedEmoji] = useState('🌸');
+  const [message, setMessage] = useState('');
 
   const plantFlower = (event: GestureResponderEvent) => {
     const x = event.nativeEvent.locationX;
     const y = event.nativeEvent.locationY;
     setFlowers([...flowers, { emoji: selectedEmoji, x, y }]);
+
+    const randomIndex = Math.floor(Math.random() * MESSAGES.length);
+    setMessage(MESSAGES[randomIndex]);
   };
 
   const pressFlower = (indexToChange: number) => {
@@ -36,6 +41,7 @@ export default function App() {
 
   const clearGarden = () => {
     setFlowers([]);
+    setMessage('');
   };
 
   return (
@@ -46,9 +52,18 @@ export default function App() {
         <Text style={styles.title}>Your Garden</Text>
         <Text style={styles.subtitle}>Tap the ground to plant, tap a flower to change it!</Text>
         <Text style={styles.count}>Flowers: {flowers.length}</Text>
+        <Text style={styles.message}>{message}</Text>
       </View>
 
       <Pressable style={styles.garden} onPress={plantFlower}>
+        {GRASS_SPOTS.map((spot, index) => (
+          <Image
+            key={index}
+            source={require('./assets/tuft.png')}
+            style={[styles.tuft, { left: `${spot.x}%`, top: `${spot.y}%` }]}
+          />
+        ))}
+
         {flowers.map((flower, index) => (
           <FlowerItem
             key={index}
@@ -107,9 +122,23 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#2e7d32',
   },
+  message: {
+    marginTop: 4,
+    minHeight: 20, // keeps the header the same height while the message is empty
+    fontSize: 15,
+    fontStyle: 'italic',
+    color: '#e75480', // soft bubblegum pink
+  },
   garden: {
     flex: 1,
     backgroundColor: '#8bc34a',
+    overflow: 'hidden', // grass and flowers near the edge don't spill outside the lawn
+  },
+  tuft: {
+    position: 'absolute',
+    width: 32,
+    height: 32,
+    pointerEvents: 'none', // taps go through the grass to the lawn
   },
   controls: {
     backgroundColor: '#fff',
